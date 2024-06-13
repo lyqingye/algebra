@@ -1,0 +1,27 @@
+name: CI
+
+# This workflow run tests and build for each push
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+
+  test_phaser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Lint
+        run: |
+          cargo fmt -- --check
+          cargo clippy -- -D warnings
+
+      - name: Test
+        run: |
+          cargo check
+          cargo test --all
