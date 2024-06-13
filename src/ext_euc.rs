@@ -5,7 +5,7 @@ pub fn ext_euc_recursion(a: i64, b: i64) -> (i64, i64, i64) {
     let (d, x_0, y_0) = ext_euc_recursion(b, a % b);
     let x_1 = y_0;
     let y_1 = x_0 - (a / b) * y_0;
-    return (d, x_1, y_1);
+    (d, x_1, y_1)
 }
 
 pub fn ext_euc(_a: i64, _b: i64) -> (i64, i64, i64) {
