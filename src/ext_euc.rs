@@ -35,15 +35,15 @@ pub fn ext_euc(_a: i64, _b: i64) -> (i64, i64, i64) {
 
 #[cfg(test)]
 mod test {
-    use crate::gcd::gcd;
     use super::*;
+    use crate::gcd::gcd;
 
     #[test]
     fn test_ext_euc_recursion() {
         let a = 240;
         let b = 46;
         let (d, x, y) = ext_euc_recursion(a, b);
-        assert_eq!(gcd(a,b),d);
+        assert_eq!(gcd(a, b), d);
         assert_eq!(d, a * x + b * y);
     }
 
@@ -52,7 +52,7 @@ mod test {
         let a = 240;
         let b = 46;
         let (d, x, y) = ext_euc(a, b);
-        assert_eq!(gcd(a,b),d);
+        assert_eq!(gcd(a, b), d);
         assert_eq!(d, a * x + b * y);
     }
 }
