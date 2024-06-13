@@ -2,7 +2,7 @@ use crate::ext_euc::ext_euc;
 
 fn inverse(a: i64, m: u64) -> Option<u64> {
     let (d, x, y) = ext_euc(a, m as i64);
-    if (d == 1) {
+    if d == 1 {
         if x < 0 {
             Some((x + m as i64) as u64)
         } else {
