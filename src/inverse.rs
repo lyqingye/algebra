@@ -1,12 +1,12 @@
 use crate::ext_euc::ext_euc;
 
-fn modular_inverse(a: i64, m: u64) -> Option<u64> {
-    let (d, x, _y) = ext_euc(a, m as i64);
+pub fn modular_inverse(a: i64, m: i64) -> Option<i64> {
+    let (d, x, _y) = ext_euc(a, m);
     if d == 1 {
         if x < 0 {
-            Some((x + m as i64) as u64)
+            Some(x + m)
         } else {
-            Some(x as u64)
+            Some(x)
         }
     } else {
         None
