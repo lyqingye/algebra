@@ -26,10 +26,10 @@ mod test {
     use super::*;
     #[test]
     fn test_solve_liner_congruence() {
-        let result = solve_linear_congruence(214124,4124,344).unwrap();
-        assert_eq!(11,result[0]);
-        assert_eq!(97,result[1]);
-        assert_eq!(183,result[2]);
-        assert_eq!(269,result[3]);
+        let result = solve_linear_congruence(214124, 4124, 344).unwrap();
+        assert_eq!(11, result[0]);
+        assert_eq!(97, result[1]);
+        assert_eq!(183, result[2]);
+        assert_eq!(269, result[3]);
     }
 }
