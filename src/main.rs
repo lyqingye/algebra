@@ -7,6 +7,7 @@ mod ext_euc;
 mod gcd;
 mod inverse;
 mod linear_congruence;
+mod wilson;
 
 fn main() {
     println!("Hello, world!");
