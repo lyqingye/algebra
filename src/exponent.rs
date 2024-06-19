@@ -1,4 +1,4 @@
-fn fast_modular_exponentiation(_a: u64, _k: u64, m: u64) -> u64 {
+pub fn fast_modular_exponentiation(_a: u64, _k: u64, m: u64) -> u64 {
     let mut a = _a % m;
     let mut k = _k;
     let mut result = 1;
