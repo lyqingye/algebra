@@ -2,6 +2,7 @@
 
 mod crt;
 mod diophantine_equation;
+mod euler;
 mod exponent;
 mod ext_euc;
 mod fermat_little_theorem;
