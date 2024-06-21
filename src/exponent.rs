@@ -5,9 +5,9 @@ pub fn fast_modular_exponentiation(_a: u64, _k: u64, m: u64) -> u64 {
 
     while k > 0 {
         if k & 1 == 1 {
-            result = (result * a) % m;
+            result = ((result as u128 * a as u128) % m as u128) as u64;
         }
-        a = (a * a) % m;
+        a = ((a as u128 * a as u128) % m as u128) as u64;
 
         k >>= 1;
     }

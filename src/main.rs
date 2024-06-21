@@ -10,6 +10,7 @@ mod gcd;
 mod inverse;
 mod linear_congruence;
 mod prime;
+mod rsa;
 mod wilson;
 
 fn main() {
