@@ -15,6 +15,29 @@ fn is_prime(n: u64) -> bool {
     (factorial + 1) % n == 0
 }
 
+pub fn is_prime2(n: u64) -> bool {
+    if n <= 1 {
+        return false;
+    }
+    if n <= 3 {
+        return true;
+    }
+    if n % 2 == 0 || n % 3 == 0 {
+        return false;
+    }
+
+    let mut i = 5;
+    let sqrt_n = (n as f64).sqrt() as u64;
+    while i <= sqrt_n {
+        if n % i == 0 || n % (i + 2) == 0 {
+            return false;
+        }
+        i += 6;
+    }
+
+    true
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
