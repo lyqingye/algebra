@@ -1,8 +1,8 @@
-use crate::ext_euc::ext_euc;
+use crate::ext_euc::ext_gcd;
 use crate::inverse::modular_inverse;
 
 fn solve_linear_congruence(a: i64, b: i64, n: i64) -> Option<Vec<i64>> {
-    let (d, _x, _y) = ext_euc(a, n);
+    let (d, _x, _y) = ext_gcd(a, n);
     if b % d == 0 {
         let a_prime = a / d;
         let b_prime = b / d;
