@@ -1,7 +1,7 @@
-use crate::ext_euc::ext_euc;
+use crate::ext_euc::ext_gcd;
 
 fn solve_diophantine_equation(a: i64, b: i64, c: i64) -> Option<(i64, i64)> {
-    let (d, x_0, y_0) = ext_euc(a, b);
+    let (d, x_0, y_0) = ext_gcd(a, b);
 
     if c % d == 0 {
         let k = c / d;
@@ -12,7 +12,7 @@ fn solve_diophantine_equation(a: i64, b: i64, c: i64) -> Option<(i64, i64)> {
 }
 
 fn find_all_solutions(a: i64, b: i64, c: i64, k: Vec<i64>) -> Option<Vec<(i64, i64)>> {
-    let (d, x_0, y_0) = ext_euc(a, b);
+    let (d, x_0, y_0) = ext_gcd(a, b);
 
     if c % d == 0 {
         let factor = c / d;

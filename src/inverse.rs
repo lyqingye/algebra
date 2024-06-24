@@ -1,7 +1,7 @@
-use crate::ext_euc::ext_euc;
+use crate::ext_euc::ext_gcd;
 
 pub fn modular_inverse(a: i64, m: i64) -> Option<i64> {
-    let (d, x, _y) = ext_euc(a, m);
+    let (d, x, _y) = ext_gcd(a, m);
     if d == 1 {
         if x < 0 {
             Some(x + m)
