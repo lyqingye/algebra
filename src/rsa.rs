@@ -77,7 +77,6 @@ mod test {
 
     // #[test]
     fn test_my_rsa() {
-        
         let mut rng = rand::thread_rng();
         let (private, public) = gen_key();
         println!("private key: {:?}", private);
