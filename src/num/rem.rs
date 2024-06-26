@@ -9,3 +9,12 @@ impl<const LIMBS: usize> Rem<&Uint<LIMBS>> for Uint<LIMBS> {
         r
     }
 }
+
+impl<const LIMBS: usize> Rem for Uint<LIMBS> {
+    type Output = Self;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        let (_, r) = self.div_rem(&rhs);
+        r
+    }
+}

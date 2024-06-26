@@ -4,6 +4,8 @@ mod cmp;
 mod div;
 mod fmt;
 mod from;
+mod gcd;
+mod inverse;
 mod limb;
 mod mul;
 mod rem;
