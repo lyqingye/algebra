@@ -15,6 +15,13 @@ impl<const LIMBS: usize> Uint<LIMBS> {
             i += 1;
         }
 
+        #[cfg(test)]
+        {
+            if borrow == Limb::ZERO {
+                assert_eq!(*self, *rhs + &Self { limbs });
+            }
+        }
+
         (Self { limbs }, borrow)
     }
 }

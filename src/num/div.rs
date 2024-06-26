@@ -30,6 +30,9 @@ impl<const LIMBS: usize> Uint<LIMBS> {
             pow = pow.wrapping_shr(&Self::ONE);
         }
 
+        #[cfg(test)]
+        assert_eq!(*self, quotient * divisor + &remainder);
+
         (quotient, remainder)
     }
 }
