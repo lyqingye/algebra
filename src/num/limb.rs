@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::ops::{BitOr, Shl, Shr};
 
 #[derive(Copy, Clone, Default, Debug, Eq)]
 #[repr(transparent)]
@@ -41,6 +42,17 @@ impl Limb {
         let ret = a + (b * c) + carry;
         (Limb(ret as u64), Limb((ret >> Self::BITS) as u64))
     }
+
+    pub fn overflowing_shl(self, shift: &Limb) -> (Limb, bool) {
+        let (r, o) = self.0.overflowing_shl(shift.0 as u32);
+        (Limb(r), o)
+    }
+}
+
+impl From<usize> for Limb {
+    fn from(value: usize) -> Self {
+        Self(value as u64)
+    }
 }
 
 impl PartialEq for Limb {
@@ -58,5 +70,27 @@ impl Ord for Limb {
 impl PartialOrd for Limb {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+impl Shl for Limb {
+    type Output = Self;
+
+    fn shl(self, rhs: Self) -> Self::Output {
+        Self(((self.0 as u128) << rhs.0) as u64)
+    }
+}
+
+impl Shr for Limb {
+    type Output = Self;
+    fn shr(self, rhs: Self) -> Self::Output {
+        Self(((self.0 as u128) >> rhs.0) as u64)
+    }
+}
+
+impl BitOr for Limb {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Self(self.0.bitor(rhs.0))
     }
 }
