@@ -7,26 +7,26 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         assert_ne!(divisor, &Self::ZERO);
 
         let mut quotient = Self::ZERO;
-        let mut d2 = *divisor;
+        let mut d = *divisor;
         let mut pow = Self::ONE;
 
         loop {
-            let (n, overflow) = d2.overflowing_shl(&Self::ONE);
+            let (n, overflow) = d.overflowing_shl(&Self::ONE);
             if overflow || (n > *self) {
                 break;
             }
-            d2 = n;
+            d = n;
             pow = pow.wrapping_shl(&Self::ONE);
         }
 
         let mut remainder = *self;
-        while remainder >= *divisor && d2 != Self::ZERO {
-            let (r, borrow) = remainder.sbb(&d2, Limb::ZERO);
+        while remainder >= *divisor && d != Self::ZERO {
+            let (r, borrow) = remainder.sbb(&d, Limb::ZERO);
             if borrow == Limb::ZERO {
                 remainder = r;
                 quotient = quotient + &pow;
             }
-            d2 = d2.wrapping_shr(&Self::ONE);
+            d = d.wrapping_shr(&Self::ONE);
             pow = pow.wrapping_shr(&Self::ONE);
         }
 
