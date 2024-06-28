@@ -1,8 +1,9 @@
-use crate::exponent::fast_modular_exponentiation;
-use crate::gcd::gcd;
-use crate::inverse::modular_inverse;
-use crate::wilson::is_prime2;
 use rand::Rng;
+
+use crate::exponent::fast_modular_exponentiation;
+use crate::gcd::gcd2;
+use crate::inverse::mod_inv;
+use crate::wilson::is_prime2;
 
 #[derive(Debug, Default)]
 struct PrivateKey {
@@ -56,13 +57,13 @@ fn gen_key() -> (PrivateKey, PublicKey) {
 
     loop {
         e = rng.gen::<u64>();
-        if e > 1 && e < phi_n && gcd(e as i64, phi_n as i64) == 1 {
+        if e > 1 && e < phi_n && gcd2(e, phi_n) == 1 {
             break;
         }
     }
 
     // calculate d
-    let d = modular_inverse(e as i64, phi_n as i64).unwrap() as u64;
+    let d = mod_inv(e, phi_n).unwrap() as u64;
 
     let public_key = PublicKey { e, n };
 
@@ -75,7 +76,7 @@ fn gen_key() -> (PrivateKey, PublicKey) {
 mod test {
     use super::*;
 
-    // #[test]
+    #[test]
     fn test_my_rsa() {
         let mut rng = rand::thread_rng();
         let (private, public) = gen_key();

@@ -20,6 +20,20 @@ pub fn gcd(_x: i64, _y: i64) -> i64 {
     }
 }
 
+pub fn gcd2(_x: u64, _y: u64) -> u64 {
+    let mut x = _x;
+    let mut y = _y;
+    loop {
+        if y == 0 {
+            return x;
+        } else {
+            let temp = x % y;
+            x = y;
+            y = temp;
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

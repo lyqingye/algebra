@@ -9,6 +9,7 @@ mod fermat_little_theorem;
 mod gcd;
 mod inverse;
 mod linear_congruence;
+mod montgomery;
 mod num;
 mod prime;
 mod rsa;
