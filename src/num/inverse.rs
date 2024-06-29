@@ -1,6 +1,7 @@
 use crate::num::uint::Uint;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
+    #[inline(always)]
     pub fn mod_inv(&self, modulus: &Self) -> Option<Self> {
         // Based on the inverse pseudocode listed here:
         // https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Modular_integers

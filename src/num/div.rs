@@ -3,6 +3,8 @@ use crate::num::uint::Uint;
 use std::ops::Div;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
+    
+    #[inline(always)]
     pub(crate) fn div_rem(&self, rhs: &Self) -> (Self, Self) {
         assert_ne!(rhs, &Self::ZERO);
 

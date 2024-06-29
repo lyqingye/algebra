@@ -1,5 +1,6 @@
 use crate::num::uint::Uint;
 
+#[inline(always)]
 pub fn gcd<const LIMBS: usize>(a: &Uint<LIMBS>, b: &Uint<LIMBS>) -> Uint<LIMBS> {
     let mut a = *a;
     let mut b = *b;

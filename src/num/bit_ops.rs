@@ -3,6 +3,7 @@ use crate::num::uint::Uint;
 use std::ops::{BitOr, Shl, Shr};
 
 impl<const LIMBS: usize> Uint<LIMBS> {
+    #[inline(always)]
     pub fn leading_zeros(&self) -> usize {
         let mut count = 0usize;
 
@@ -18,10 +19,12 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         count
     }
 
+    #[inline(always)]
     pub fn bits(&self) -> usize {
         Self::BITS - self.leading_zeros()
     }
 
+    #[inline(always)]
     pub(crate) fn bitor(&self, rhs: &Self) -> Self {
         let mut limbs = [Limb::ZERO; LIMBS];
         let mut i = 0;
