@@ -8,6 +8,36 @@ pub struct Montgomery {
     neg_inv_n: u64,
 }
 
+fn lo64(a: u64) -> u64 {
+    a & ((1<<32)-1)
+}
+
+/// Returns the most significant 64 bits of a
+fn hi64(a: u64) -> u64 {
+    a >> 32
+}
+
+fn add64(a0: u64, a1: u64, b0: u64, b1: u64) -> (u64, u64) {
+    let (r0, overflow) = a0.overflowing_add(b0);
+    let r1 = a1.wrapping_add(b1).wrapping_add(overflow as u64);
+    (r0, r1)
+}
+
+fn mul64(a: u64, b: u64) -> (u64, u64) {
+    // Split a and b into hi and lo 64-bit parts
+    // a*b = (a1<<64 + a0)*(b1<<64 + b0)
+    // = (a1*b1)<<128 + (a1*b0 + b1*a0)<<64 + a0*b0
+    let (a0, a1) = (lo64(a), hi64(a));
+    let (b0, b1) = (lo64(b), hi64(b));
+    let (x, y) = (a1*b0, b1*a0);
+
+    let (r0, r1) = (a0*b0, a1*b1);
+    let (r0, r1) = add64(r0, r1, lo64(x)<<32, hi64(x));
+    let (r0, r1) = add64(r0, r1, lo64(y)<<32, hi64(y));
+    (r0, r1)
+}
+
+
 impl Montgomery {
     pub fn init(n: u64) -> Self {
         let k = 63;
@@ -47,7 +77,7 @@ impl Montgomery {
 
 #[cfg(test)]
 mod test {
-    use crate::montgomery::Montgomery;
+    use crate::montgomery::{Montgomery, mul64};
 
     #[test]
     fn test_mod_mul() {
@@ -56,5 +86,18 @@ mod test {
             (23456789u128 * 12345678u128 % 123456789u128) as u64,
             mont.mod_mul(23456789, 12345678)
         );
+    }
+
+    #[test]
+    fn test_mul_u128() {
+        let x: u64 = 12345678901234567890;
+        let y: u64 = 9876543210987654321;
+
+        let result = mul64(x, y);
+
+        println!("High: {}", result.0);
+        println!("Low: {}", result.1);
+        println!("{}", ((result.1 as u128) << 64) + result.0 as u128);
+        println!("{}", (x as u128) * y as u128);
     }
 }
