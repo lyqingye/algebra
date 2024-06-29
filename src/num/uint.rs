@@ -25,4 +25,11 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 }
 
+pub type U8192 = Uint<128>;
+pub type U4096 = Uint<64>;
+pub type U2048 = Uint<32>;
+pub type U1024 = Uint<16>;
+pub type U512 = Uint<8>;
+pub type U256 = Uint<4>;
 pub type U128 = Uint<2>;
+pub type U64 = Uint<1>;
