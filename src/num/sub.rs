@@ -7,6 +7,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     pub fn sbb(&self, rhs: &Self, mut borrow: Limb) -> (Self, Limb) {
         let mut limbs = [Limb::ZERO; LIMBS];
 
+        #[allow(clippy::needless_range_loop)]
         for i in 0..LIMBS {
             let (w, b) = self.limbs[i].sbb(rhs.limbs[i], borrow);
             limbs[i] = w;

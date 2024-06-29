@@ -7,6 +7,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     pub fn adc(&self, rhs: &Self, mut carry: Limb) -> (Self, Limb) {
         let mut limbs = [Limb::ZERO; LIMBS];
 
+        #[allow(clippy::needless_range_loop)]
         for i in 0..LIMBS {
             let (w, c) = self.limbs[i].adc(rhs.limbs[i], carry);
             limbs[i] = w;

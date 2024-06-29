@@ -49,7 +49,7 @@ impl Limb {
     pub fn is_zero(self) -> bool {
         self.0 == 0
     }
-    
+
     #[inline(always)]
     pub fn is_nonzero(self) -> bool {
         !self.is_zero()
