@@ -3,37 +3,32 @@ use crate::num::uint::Uint;
 use std::ops::Div;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
-    pub(crate) fn div_rem(&self, divisor: &Self) -> (Self, Self) {
-        assert_ne!(divisor, &Self::ZERO);
+    pub(crate) fn div_rem(&self, rhs: &Self) -> (Self, Self) {
+        assert_ne!(rhs, &Self::ZERO);
 
-        let mut quotient = Self::ZERO;
-        let mut d = *divisor;
-        let mut pow = Self::ONE;
+        let divisor = *rhs;
+        let divisor_bits = divisor.bits();
+        let bd = Self::BITS - divisor_bits;
+        let mut quo = Self::ZERO;
 
-        loop {
-            let (n, overflow) = d.overflowing_shl(&Self::ONE);
-            if overflow || (n > *self) {
-                break;
-            }
-            d = n;
-            pow = pow.wrapping_shl(&Self::ONE);
-        }
+        let mut c = divisor.wrapping_shl(bd as u32);
+        let mut pow = Self::ONE.wrapping_shl(bd as u32);
+        let mut rem = *self;
 
-        let mut remainder = *self;
-        while remainder >= *divisor && d != Self::ZERO {
-            let (r, borrow) = remainder.sbb(&d, Limb::ZERO);
+        while rem >= divisor && c.is_nonzero() {
+            let (r, borrow) = rem.sbb(&c, Limb::ZERO);
             if borrow == Limb::ZERO {
-                remainder = r;
-                quotient = quotient + &pow;
+                rem = r;
+                quo = quo + &pow;
             }
-            d = d.wrapping_shr(&Self::ONE);
-            pow = pow.wrapping_shr(&Self::ONE);
+            c = c.wrapping_shr(1);
+            pow = pow.wrapping_shr(1);
         }
 
         #[cfg(test)]
-        assert_eq!(*self, quotient * divisor + &remainder);
+        assert_eq!(*self, quo * &divisor + &rem);
 
-        (quotient, remainder)
+        (quo, rem)
     }
 }
 

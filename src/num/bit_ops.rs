@@ -35,8 +35,8 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     #[inline(always)]
-    pub(crate) fn wrapping_shl(&self, rhs: &Self) -> Self {
-        let shift_bit = rhs.limbs[0].0 as usize;
+    pub(crate) fn wrapping_shl(&self, rhs: u32) -> Self {
+        let shift_bit = rhs as usize;
 
         if shift_bit == 0 {
             return *self;
@@ -59,14 +59,14 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     #[inline(always)]
-    pub(crate) fn overflowing_shl(&self, rhs: &Self) -> (Self, bool) {
+    pub(crate) fn overflowing_shl(&self, rhs: u32) -> (Self, bool) {
         let r = self.wrapping_shl(rhs);
         (r, r.wrapping_shr(rhs) != *self)
     }
 
     #[inline(always)]
-    pub(crate) fn wrapping_shr(&self, rhs: &Self) -> Self {
-        let shift_bit = rhs.limbs[0].0 as usize;
+    pub(crate) fn wrapping_shr(&self, rhs: u32) -> Self {
+        let shift_bit = rhs as usize;
 
         if shift_bit == 0 {
             return *self;
@@ -82,9 +82,6 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         for i in (shift_num..LIMBS).rev() {
             let low = self.limbs[i].wrapping_shr(shr_shift);
             limbs[i - shift_num] = high.bitor(low);
-
-            // println!("shift before {} ,shift after: {}",self.limbs[i].to_binary_string(false),limbs[i-shift_num].to_binary_string(false));
-
             high = self.limbs[i].wrapping_shl(shl_shift);
         }
 
@@ -92,7 +89,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     #[inline(always)]
-    pub(crate) fn overflowing_shr(&self, rhs: &Self) -> (Self, bool) {
+    pub(crate) fn overflowing_shr(&self, rhs: u32) -> (Self, bool) {
         let r = self.wrapping_shr(rhs);
         (r, *self != r.wrapping_shl(rhs))
     }
@@ -100,14 +97,14 @@ impl<const LIMBS: usize> Uint<LIMBS> {
 impl<const LIMBS: usize> Shr<&Uint<LIMBS>> for Uint<LIMBS> {
     type Output = Self;
     fn shr(self, rhs: &Uint<LIMBS>) -> Self::Output {
-        self.wrapping_shr(rhs)
+        self.wrapping_shr(rhs.limbs[0].0 as u32)
     }
 }
 
 impl<const LIMBS: usize> Shl<&Uint<LIMBS>> for Uint<LIMBS> {
     type Output = Self;
     fn shl(self, rhs: &Uint<LIMBS>) -> Self::Output {
-        self.wrapping_shl(rhs)
+        self.wrapping_shl(rhs.limbs[0].0 as u32)
     }
 }
 

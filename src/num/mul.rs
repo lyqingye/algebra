@@ -5,6 +5,12 @@ use std::ops::Mul;
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
     fn overflowing_mul(&self, rhs: &Self) -> (Self, bool) {
+        let (low, high) = self.split_mul(rhs);
+        (low, high.is_nonzero())
+    }
+
+    #[inline(always)]
+    fn split_mul(&self, rhs: &Self) -> (Self, Self) {
         let mut temp = vec![Limb::ZERO; LIMBS * 2];
         let mut carry = Limb::ZERO;
 
@@ -13,18 +19,21 @@ impl<const LIMBS: usize> Uint<LIMBS> {
                 let (ret, c) = temp[i + j].mac(self.limbs[i], rhs.limbs[j], carry);
                 carry = c;
                 temp[i + j] = ret;
-
-                if (i + j) >= LIMBS && ((temp[i + j] != Limb::ZERO) || (carry != Limb::ZERO)) {
-                    return (Self::ZERO, true);
-                }
             }
             temp[i + LIMBS] = carry;
         }
 
-        let mut result = [Limb::ZERO; LIMBS];
-        result.copy_from_slice(&temp[0..LIMBS]);
+        let mut low = [Limb::ZERO; LIMBS];
+        low.copy_from_slice(&temp[0..LIMBS]);
+        let mut high = [Limb::ZERO; LIMBS];
+        high.copy_from_slice(&temp[LIMBS..LIMBS * 2]);
 
-        (Self { limbs: result }, false)
+        (Self { limbs: low }, Self { limbs: high })
+    }
+
+    #[inline(always)]
+    fn wrapping_mul(&self, rhs: &Self) -> Self {
+        self.split_mul(rhs).0
     }
 }
 
