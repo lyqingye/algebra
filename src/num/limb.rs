@@ -44,4 +44,14 @@ impl Limb {
         let ret = a + (b * c) + carry;
         (Limb(ret as u64), Limb((ret >> Self::BITS) as u64))
     }
+
+    #[inline(always)]
+    pub fn is_zero(self) -> bool {
+        self.0 == 0
+    }
+
+    #[inline(always)]
+    pub fn is_nonzero(self) -> bool {
+        !self.is_zero()
+    }
 }

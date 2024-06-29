@@ -12,10 +12,16 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     pub const MAX: Self = Self {
         limbs: [Limb::MAX; LIMBS],
     };
+    pub const BITS: usize = Limb::BITS * LIMBS;
 
     #[inline(always)]
     pub(crate) fn is_zero(&self) -> bool {
         self.limbs.iter().all(|&limb| limb == Limb::ZERO)
+    }
+
+    #[inline(always)]
+    pub(crate) fn is_nonzero(&self) -> bool {
+        self.limbs.iter().any(|&limb| limb != Limb::ZERO)
     }
 }
 
