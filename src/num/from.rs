@@ -1,12 +1,14 @@
 use crate::num::limb::Limb;
 use crate::num::uint::Uint;
 impl<const LIMBS: usize> Uint<LIMBS> {
+    #[inline(always)]
     pub(crate) const fn from_u64(n: u64) -> Self {
         let mut limbs = [Limb::ZERO; LIMBS];
         limbs[0].0 = n;
         Self { limbs }
     }
 
+    #[inline(always)]
     pub(crate) const fn from_u128(n: u128) -> Self {
         let mut limbs = [Limb::ZERO; LIMBS];
         limbs[0].0 = n as u64;

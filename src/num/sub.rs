@@ -6,13 +6,11 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
     pub fn sbb(&self, rhs: &Self, mut borrow: Limb) -> (Self, Limb) {
         let mut limbs = [Limb::ZERO; LIMBS];
-        let mut i = 0;
 
-        while i < LIMBS {
+        for i in 0..LIMBS {
             let (w, b) = self.limbs[i].sbb(rhs.limbs[i], borrow);
             limbs[i] = w;
             borrow = b;
-            i += 1;
         }
 
         #[cfg(test)]

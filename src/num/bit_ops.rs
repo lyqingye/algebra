@@ -19,7 +19,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     pub fn bits(&self) -> usize {
-        (LIMBS * Limb::BITS) - self.leading_zeros()
+        Self::BITS - self.leading_zeros()
     }
 
     pub(crate) fn bitor(&self, rhs: &Self) -> Self {

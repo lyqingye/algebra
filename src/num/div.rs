@@ -7,8 +7,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         assert_ne!(rhs, &Self::ZERO);
 
         let divisor = *rhs;
-        let divisor_bits = divisor.bits();
-        let bd = Self::BITS - divisor_bits;
+        let bd = Self::BITS - divisor.bits();
         let mut quo = Self::ZERO;
 
         let mut c = divisor.wrapping_shl(bd as u32);
@@ -17,7 +16,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
 
         while rem >= divisor && c.is_nonzero() {
             let (r, borrow) = rem.sbb(&c, Limb::ZERO);
-            if borrow == Limb::ZERO {
+            if borrow.is_zero() {
                 rem = r;
                 quo = quo + &pow;
             }

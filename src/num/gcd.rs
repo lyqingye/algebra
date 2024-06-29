@@ -5,7 +5,7 @@ pub fn gcd<const LIMBS: usize>(a: &Uint<LIMBS>, b: &Uint<LIMBS>) -> Uint<LIMBS> 
     let mut b = *b;
 
     loop {
-        if b == Uint::ZERO {
+        if b.is_zero() {
             return a;
         } else {
             let temp = a % b;
