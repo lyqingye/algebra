@@ -40,26 +40,29 @@ impl<const LIMBS: usize> Wide<LIMBS> {
         r
     }
 
+    #[inline(always)]
     pub fn shr1(&self) -> Self {
         self.shr(1)
     }
 
+    #[inline(always)]
     pub fn shr(&self, shift: u32) -> Self {
         if shift == 0 {
             return *self;
         }
 
-        let lhs = [self.low.limbs, self.high.limbs].concat();
+        let new_limbs: usize = LIMBS * 2;
 
+        let mut limbs = vec![Limb::ZERO; new_limbs];
+        let lhs = [self.low.limbs, self.high.limbs].concat();
         let shift_bit = shift as usize;
-        let mut limbs = vec![Limb::ZERO; LIMBS * 2];
 
         let shift_num = shift_bit / Limb::BITS;
         let shr_shift = (shift_bit % Limb::BITS) as u32;
         let shl_shift = Limb::BITS as u32 - shr_shift;
 
         let mut high = Limb::ZERO;
-        for i in (shift_num..LIMBS * 2).rev() {
+        for i in (shift_num..new_limbs).rev() {
             let low = lhs[i].wrapping_shr(shr_shift);
             limbs[i - shift_num] = high.bitor(low);
             high = lhs[i].wrapping_shl(shl_shift);
@@ -67,7 +70,7 @@ impl<const LIMBS: usize> Wide<LIMBS> {
 
         let mut ret = Self::ZERO;
         ret.low.limbs.copy_from_slice(&limbs[0..LIMBS]);
-        ret.high.limbs.copy_from_slice(&limbs[LIMBS..LIMBS * 2]);
+        ret.high.limbs.copy_from_slice(&limbs[LIMBS..new_limbs]);
 
         ret
     }
@@ -75,9 +78,7 @@ impl<const LIMBS: usize> Wide<LIMBS> {
     #[inline(always)]
     fn rem(&self, rhs: &Uint<LIMBS>) -> Uint<LIMBS> {
         let lz = rhs.leading_zeros();
-
         let mut rem = *self;
-
         let mut rhs = Self {
             low: Uint::ZERO,
             high: rhs.wrapping_shl(lz as u32),
