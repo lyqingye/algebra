@@ -1,8 +1,9 @@
-use crate::num::limb::Limb;
-use crate::num::uint::Uint;
 use std::ops::BitOr;
 
-#[derive(Copy, Clone)]
+use crate::num::limb::Limb;
+use crate::num::uint::Uint;
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Wide<const LIMBS: usize> {
     pub(crate) low: Uint<LIMBS>,
     pub(crate) high: Uint<LIMBS>,
@@ -76,7 +77,49 @@ impl<const LIMBS: usize> Wide<LIMBS> {
     }
 
     #[inline(always)]
-    fn rem(&self, rhs: &Uint<LIMBS>) -> Uint<LIMBS> {
+    pub fn shl(&self, shift: u32) -> Self {
+        if shift == 0 {
+            return *self;
+        }
+
+        let new_limbs: usize = LIMBS * 2;
+
+        let mut limbs = vec![Limb::ZERO; new_limbs];
+        let lhs = [self.low.limbs, self.high.limbs].concat();
+        let shift_bit = shift as usize;
+
+        let shift_num = shift_bit / Limb::BITS;
+        let shl_shift = (shift_bit % Limb::BITS) as u32;
+        let shr_shift = Limb::BITS as u32 - shl_shift;
+
+        let mut low = Limb::ZERO;
+        for i in 0..(new_limbs - shift_num) {
+            let high = lhs[i].wrapping_shl(shl_shift);
+            limbs[i + shift_num] = high.bitor(low);
+            low = lhs[i].wrapping_shr(shr_shift);
+        }
+
+        let mut ret = Self::ZERO;
+        ret.low.limbs.copy_from_slice(&limbs[0..LIMBS]);
+        ret.high.limbs.copy_from_slice(&limbs[LIMBS..new_limbs]);
+
+        ret
+    }
+
+    #[inline(always)]
+    pub fn shl1(&self) -> Self {
+        self.shl(1)
+    }
+
+    #[inline(always)]
+    pub fn bitor1(&self) -> Self {
+        let mut ret = *self;
+        ret.low = ret.low.bitor(&Uint::ONE);
+        ret
+    }
+
+    #[inline(always)]
+    pub fn rem(&self, rhs: &Uint<LIMBS>) -> Uint<LIMBS> {
         let lz = rhs.leading_zeros();
         let mut rem = *self;
         let mut rhs = Self {
@@ -98,6 +141,34 @@ impl<const LIMBS: usize> Wide<LIMBS> {
             rhs = rhs.shr1();
         }
         rem.low
+    }
+
+    #[inline(always)]
+    pub fn div(&self, rhs: &Uint<LIMBS>) -> (Self, Uint<LIMBS>) {
+        let lz = rhs.leading_zeros();
+        let mut rem = *self;
+        let mut quo = Self::ZERO;
+        let mut rhs = Self {
+            low: Uint::ZERO,
+            high: rhs.wrapping_shl(lz as u32),
+        };
+
+        let mut bd = lz + Uint::<LIMBS>::BITS;
+
+        loop {
+            let (r, borrow) = rem.sbb(&rhs, Limb::ZERO);
+            if borrow.is_zero() {
+                rem = r;
+                quo = quo.bitor1();
+            }
+            if bd == 0 {
+                break;
+            }
+            bd -= 1;
+            rhs = rhs.shr1();
+            quo = quo.shl1();
+        }
+        (quo, rem.low)
     }
 }
 
@@ -229,6 +300,20 @@ mod test {
                 a,
                 b
             );
+        }
+    }
+
+    #[test]
+    fn test_shl() {
+        let mut rng = thread_rng();
+        for _ in 0..1000 {
+            let a: u64 = rng.gen();
+            let shift = rng.gen_range(1..64) as u32;
+
+            let expect: Wide<1> = U128::from_u128((a as u128) << shift as u128).to_wide();
+            let actual: Wide<1> = Wide::from((U64::from_u64(a), U64::ZERO)).shl(shift);
+
+            assert_eq!(expect, actual)
         }
     }
 }

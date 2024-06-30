@@ -5,13 +5,13 @@ use std::ops::Mul;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
-    fn overflowing_mul(&self, rhs: &Self) -> (Self, bool) {
+    pub(crate) fn overflowing_mul(&self, rhs: &Self) -> (Self, bool) {
         let r = self.split_mul(rhs);
         (r.low, r.high.is_nonzero())
     }
 
     #[inline(always)]
-    fn split_mul(&self, rhs: &Self) -> Wide<LIMBS> {
+    pub(crate) fn split_mul(&self, rhs: &Self) -> Wide<LIMBS> {
         let mut temp = vec![Limb::ZERO; LIMBS * 2];
         let mut carry = Limb::ZERO;
 
@@ -36,7 +36,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     #[inline(always)]
-    fn wrapping_mul(&self, rhs: &Self) -> Self {
+    pub(crate) fn wrapping_mul(&self, rhs: &Self) -> Self {
         self.split_mul(rhs).low
     }
 }
