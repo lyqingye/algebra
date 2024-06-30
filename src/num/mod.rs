@@ -13,3 +13,4 @@ mod rand;
 mod rem;
 mod sub;
 mod uint;
+mod wide;
