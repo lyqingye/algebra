@@ -40,7 +40,8 @@ impl<const LIMBS: usize> Uint<LIMBS> {
             r0 = r1;
             r1 = r2;
 
-            let qt1 = q * &t1 % modulus;
+            // let qt1 = q * &t1 % modulus;
+            let qt1 = q.mul_mod(&t1, modulus);
             let t2 = if t0 < qt1 {
                 t0 + &(*modulus - &qt1)
             } else {

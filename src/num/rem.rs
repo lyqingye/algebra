@@ -1,5 +1,6 @@
-use crate::num::uint::Uint;
 use std::ops::Rem;
+
+use crate::num::uint::Uint;
 
 impl<const LIMBS: usize> Rem<&Uint<LIMBS>> for Uint<LIMBS> {
     type Output = Self;

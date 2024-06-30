@@ -1,16 +1,17 @@
 use crate::num::limb::Limb;
 use crate::num::uint::Uint;
+use crate::num::wide::Wide;
 use std::ops::Mul;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
-    fn overflowing_mul(&self, rhs: &Self) -> (Self, bool) {
-        let (low, high) = self.split_mul(rhs);
-        (low, high.is_nonzero())
+    pub(crate) fn overflowing_mul(&self, rhs: &Self) -> (Self, bool) {
+        let r = self.split_mul(rhs);
+        (r.low, r.high.is_nonzero())
     }
 
     #[inline(always)]
-    fn split_mul(&self, rhs: &Self) -> (Self, Self) {
+    pub(crate) fn split_mul(&self, rhs: &Self) -> Wide<LIMBS> {
         let mut temp = vec![Limb::ZERO; LIMBS * 2];
         let mut carry = Limb::ZERO;
 
@@ -28,12 +29,15 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         let mut high = [Limb::ZERO; LIMBS];
         high.copy_from_slice(&temp[LIMBS..LIMBS * 2]);
 
-        (Self { limbs: low }, Self { limbs: high })
+        Wide {
+            low: Self { limbs: low },
+            high: Self { limbs: high },
+        }
     }
 
     #[inline(always)]
-    fn wrapping_mul(&self, rhs: &Self) -> Self {
-        self.split_mul(rhs).0
+    pub(crate) fn wrapping_mul(&self, rhs: &Self) -> Self {
+        self.split_mul(rhs).low
     }
 }
 

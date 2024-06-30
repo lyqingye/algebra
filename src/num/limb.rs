@@ -2,6 +2,7 @@ mod bit_ops;
 mod cmp;
 mod fmt;
 mod from;
+mod rand;
 
 #[derive(Copy, Clone, Default, Debug, Eq)]
 #[repr(transparent)]
@@ -17,6 +18,7 @@ impl Limb {
 
 impl Limb {
     #[inline(always)]
+    /// Computes `a + b + carry`, returning the result along with the new carry.
     pub fn adc(self, rhs: Self, carry: Self) -> (Self, Self) {
         let a = self.0 as u128;
         let b = rhs.0 as u128;
@@ -26,6 +28,7 @@ impl Limb {
     }
 
     #[inline(always)]
+    /// Computes `self - (rhs + borrow)`, returning the result along with the new borrow.
     pub fn sbb(self, rhs: Self, borrow: Self) -> (Self, Self) {
         let a = self.0 as u128;
         let b = rhs.0 as u128;

@@ -1,6 +1,7 @@
+use std::ops::Div;
+
 use crate::num::limb::Limb;
 use crate::num::uint::Uint;
-use std::ops::Div;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
@@ -8,21 +9,23 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         assert_ne!(rhs, &Self::ZERO);
 
         let divisor = *rhs;
-        let bd = Self::BITS - divisor.bits();
+        let mut bd = divisor.leading_zeros();
         let mut quo = Self::ZERO;
-
         let mut c = divisor.wrapping_shl(bd as u32);
-        let mut pow = Self::ONE.wrapping_shl(bd as u32);
         let mut rem = *self;
 
-        while rem >= divisor && c.is_nonzero() {
+        loop {
             let (r, borrow) = rem.sbb(&c, Limb::ZERO);
             if borrow.is_zero() {
                 rem = r;
-                quo = quo + &pow;
+                quo = quo.bitor(&Self::ONE)
             }
-            c = c.wrapping_shr(1);
-            pow = pow.wrapping_shr(1);
+            if bd == 0 {
+                break;
+            }
+            bd -= 1;
+            c = c >> &Self::ONE;
+            quo = quo << &Self::ONE;
         }
 
         #[cfg(test)]
@@ -42,8 +45,9 @@ impl<const LIMBS: usize> Div<&Uint<LIMBS>> for Uint<LIMBS> {
 
 #[cfg(test)]
 mod test {
-    use crate::num::uint::U128;
     use rand::{thread_rng, Rng};
+
+    use crate::num::uint::U128;
 
     #[test]
     fn test_div() {
@@ -53,7 +57,6 @@ mod test {
             let b: u64 = rng.gen();
             let ba = U128::from_u128(a);
             let bb = U128::from_u64(b);
-            println!("a: {}, b: {}", a, b);
             assert_eq!(
                 (ba / &bb).to_string(),
                 (a / b as u128).to_string(),
@@ -61,7 +64,6 @@ mod test {
                 a,
                 b
             );
-            println!("{:}", ba / &bb);
         }
     }
 }

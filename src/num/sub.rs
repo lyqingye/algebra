@@ -1,6 +1,7 @@
+use std::ops::Sub;
+
 use crate::num::limb::Limb;
 use crate::num::uint::Uint;
-use std::ops::Sub;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
@@ -14,13 +15,6 @@ impl<const LIMBS: usize> Uint<LIMBS> {
             borrow = b;
         }
 
-        #[cfg(test)]
-        {
-            if borrow == Limb::ZERO {
-                assert_eq!(*self, *rhs + &Self { limbs });
-            }
-        }
-
         (Self { limbs }, borrow)
     }
 }
@@ -32,5 +26,36 @@ impl<const LIMBS: usize> Sub<&Uint<LIMBS>> for Uint<LIMBS> {
         let (r, s) = self.sbb(rhs, Limb::ZERO);
         assert_eq!(s, Limb::ZERO, "attempted to subtract with overflow");
         r
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::cmp::{max, min};
+
+    use rand::{thread_rng, Rng};
+
+    use crate::num::limb::Limb;
+    use crate::num::uint::U128;
+
+    #[test]
+    fn test_sub() {
+        let mut rng = thread_rng();
+        for _ in 0..1000 {
+            let a: u128 = rng.gen();
+            let b: u128 = rng.gen();
+            let a = max(a, b);
+            let b = min(a, b);
+
+            let ua = U128::from_u128(a);
+            let ub = U128::from_u128(b);
+            assert_eq!(U128::from_u128(a - b), ua - &ub);
+        }
+    }
+
+    #[test]
+    fn test_sub_with_overflow() {
+        let (_, overflow) = U128::ONE.sbb(&U128::MAX, Limb::ZERO);
+        assert!(overflow.is_nonzero())
     }
 }
