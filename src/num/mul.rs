@@ -70,12 +70,7 @@ mod test {
             let b_1 = U128::from(b);
             let c_1 = a_1 * &b_1;
 
-            assert_eq!(c.to_string(), c_1.to_string())
-        }
-        let mut t = U128::from(2);
-        for _ in 0..126 {
-            t = t * &U128::from(2);
-            println!("{:}", t);
+            assert_eq!(U128::from_u128(c), c_1)
         }
     }
 }

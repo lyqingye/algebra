@@ -1,5 +1,5 @@
 use crate::num::limb::Limb;
-use std::ops::{BitOr, Shl, Shr};
+use std::ops::{BitAnd, BitOr, Shl, Shr};
 
 impl Limb {
     #[inline(always)]
@@ -54,6 +54,14 @@ impl BitOr for Limb {
     type Output = Self;
     fn bitor(self, rhs: Self) -> Self::Output {
         Self(self.0.bitor(rhs.0))
+    }
+}
+
+impl BitAnd for Limb {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Self(self.0.bitand(rhs.0))
     }
 }
 

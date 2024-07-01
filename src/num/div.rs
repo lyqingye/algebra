@@ -58,8 +58,8 @@ mod test {
             let ba = U128::from_u128(a);
             let bb = U128::from_u64(b);
             assert_eq!(
-                (ba / &bb).to_string(),
-                (a / b as u128).to_string(),
+                (ba / &bb),
+                U128::from_u128(a / b as u128),
                 "a: {}, b: {}",
                 a,
                 b
