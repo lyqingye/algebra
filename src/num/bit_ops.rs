@@ -1,6 +1,6 @@
 use crate::num::limb::Limb;
 use crate::num::uint::Uint;
-use std::ops::{BitOr, Shl, Shr};
+use std::ops::{BitAnd, BitOr, Shl, Shr};
 
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
@@ -31,6 +31,19 @@ impl<const LIMBS: usize> Uint<LIMBS> {
 
         while i < LIMBS {
             limbs[i] = self.limbs[i].bitor(rhs.limbs[i]);
+            i += 1;
+        }
+
+        Self { limbs }
+    }
+
+    #[inline(always)]
+    pub(crate) fn bitand(&self, rhs: &Self) -> Self {
+        let mut limbs = [Limb::ZERO; LIMBS];
+        let mut i = 0;
+
+        while i < LIMBS {
+            limbs[i] = self.limbs[i].bitand(rhs.limbs[i]);
             i += 1;
         }
 

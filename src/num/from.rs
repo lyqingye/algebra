@@ -23,6 +23,12 @@ impl<const LIMBS: usize> From<u64> for Uint<LIMBS> {
     }
 }
 
+impl<const LIMBS: usize> From<u128> for Uint<LIMBS> {
+    fn from(n: u128) -> Self {
+        Self::from_u128(n)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::num::uint::U128;

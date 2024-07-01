@@ -23,7 +23,10 @@ mod test {
 
     #[test]
     fn test_gcd() {
-        assert_eq!(U128::from(4), gcd(&U128::from(148), &U128::from(36)));
-        assert_eq!(U128::from(5), gcd(&U128::from(15), &U128::from(5)));
+        assert_eq!(
+            U128::from(4u64),
+            gcd(&U128::from(148u64), &U128::from(36u64))
+        );
+        assert_eq!(U128::from(5u64), gcd(&U128::from(15u64), &U128::from(5u64)));
     }
 }
