@@ -34,7 +34,6 @@ pub fn binary_gcd<const LIMBS: usize>(a: &Uint<LIMBS>, b: &Uint<LIMBS>) -> Uint<
     let i = u.trailing_zeros();
     let j = v.trailing_zeros();
     let k = min(i, j);
-    // let k = u.bitor(&v).trailing_zeros();
 
     u = u.wrapping_shr(i);
     v = v.wrapping_shr(j);
