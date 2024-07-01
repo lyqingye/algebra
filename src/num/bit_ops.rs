@@ -20,6 +20,21 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     #[inline(always)]
+    pub fn trailing_zeros(&self) -> u32 {
+        let mut count = 0;
+
+        for i in 0..LIMBS {
+            if self.limbs[i].is_nonzero() {
+                count += self.limbs[i].0.trailing_zeros();
+                break;
+            } else {
+                count += Limb::BITS as u32;
+            }
+        }
+        count
+    }
+
+    #[inline(always)]
     pub fn bits(&self) -> usize {
         Self::BITS - self.leading_zeros()
     }
@@ -171,6 +186,17 @@ mod test {
                 expect.to_binary_string(),
                 actual.to_binary_string()
             );
+        }
+    }
+
+    #[test]
+    fn test_trailing_zeros() {
+        let mut rng = thread_rng();
+
+        for _ in 0..1000 {
+            let a: u128 = rng.gen();
+            let b = U128::from(a);
+            assert_eq!(a.trailing_zeros(), b.trailing_zeros())
         }
     }
 }
