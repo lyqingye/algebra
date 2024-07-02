@@ -33,11 +33,11 @@ impl<const LIMBS: usize> MontyParams<LIMBS> {
         }
     }
 
-    pub fn to_monty_form(&self, t: &Uint<LIMBS>) -> MontyForm<LIMBS> {
+    pub fn to_monty_form(self, t: &Uint<LIMBS>) -> MontyForm<LIMBS> {
         let form = self.reduction(&(t.split_mul(&self.r2).rem(&self.n)));
         MontyForm {
             form,
-            params: *self,
+            params: self,
         }
     }
 }
