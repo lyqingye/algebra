@@ -14,6 +14,8 @@ pub struct MontyParams<const LIMBS: usize> {
 impl<const LIMBS: usize> MontyParams<LIMBS> {
     pub fn init(n: &Uint<LIMBS>) -> Option<Self> {
         let n = *n;
+        
+        // 2^k mod p = 2^k - 1 + 1 mod p = 2^k - 1 mod p + 1 mod p = Uint::MAX mod p + 1
         let r = Uint::MAX.rem(&n).adc(&Uint::ONE, Limb::ZERO).0;
         let r2 = r.split_mul(&r).rem(&n);
         let inv_n = n.mod_inv_2k(Uint::<LIMBS>::BITS as u32)?;
