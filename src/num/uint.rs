@@ -23,6 +23,18 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     pub(crate) fn is_nonzero(&self) -> bool {
         self.limbs.iter().any(|&limb| limb != Limb::ZERO)
     }
+
+    #[inline(always)]
+    /// 是否为奇数
+    pub(crate) fn is_odd(&self) -> bool {
+        self.limbs[0].0 & 1 == 1
+    }
+
+    #[inline(always)]
+    /// 是否为偶数
+    pub(crate) fn is_even(&self) -> bool {
+        !self.is_odd()
+    }
 }
 
 pub type U8192 = Uint<128>;

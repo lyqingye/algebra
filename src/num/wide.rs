@@ -14,6 +14,12 @@ impl<const LIMBS: usize> Wide<LIMBS> {
         low: Uint::ZERO,
         high: Uint::ZERO,
     };
+
+    pub const ONE: Self = Self {
+        low: Uint::ONE,
+        high: Uint::ZERO,
+    };
+
     #[inline(always)]
     pub fn sub(&self, rhs: &Self) -> Self {
         let (r, borrow) = self.sbb(rhs, Limb::ZERO);
@@ -115,6 +121,13 @@ impl<const LIMBS: usize> Wide<LIMBS> {
     pub fn bitor1(&self) -> Self {
         let mut ret = *self;
         ret.low = ret.low.bitor(&Uint::ONE);
+        ret
+    }
+
+    #[inline(always)]
+    pub fn bitand_low(&self, rhs: &Uint<LIMBS>) -> Self {
+        let mut ret = *self;
+        ret.low = ret.low.bitand(rhs);
         ret
     }
 

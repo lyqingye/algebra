@@ -57,12 +57,37 @@ impl<const LIMBS: usize> Uint<LIMBS> {
             None
         }
     }
+
+    #[inline(always)]
+    pub fn mod_inv_2k(&self, k: u32) -> Option<Self> {
+        assert!(k >= Self::BITS as u32);
+        if self.is_even() {
+            return None;
+        }
+        let two = Self::from(2u64);
+        let mut x = Self::ONE;
+
+        // 代表二进制 11, i 从1开始，所以 2^(i+1) - 1 = 3
+        let mut mask = Self::from(3u64);
+
+        for _ in 1..k {
+            let a_x = self.split_mul(&x).bitand_low(&mask).low;
+            let two_minus_a_x = two.wrapping_sub(&a_x).bitand(&mask);
+            x = x.split_mul(&two_minus_a_x).bitand_low(&mask).low;
+            mask = mask.wrapping_shl(1);
+            mask = mask.bitor(&Self::ONE);
+        }
+
+        Some(x)
+    }
 }
 
 #[cfg(test)]
 
 mod test {
-    use crate::num::uint::U128;
+    use crate::inverse::mod_inverse_2k;
+    use crate::num::uint::{U128, U64};
+    use rand::{thread_rng, Rng};
 
     #[test]
     fn test_mod_inverse() {
@@ -75,5 +100,25 @@ mod test {
             U128::from_u128(323213123).mod_inv(&U128::from_u128(323233))
         );
         assert_eq!(None, U128::from_u128(4).mod_inv(&U128::from_u128(2)));
+    }
+
+    #[test]
+    fn test_mod_inv_2k() {
+        assert_eq!(
+            Some(U64::from_u64(2092033757777554795)),
+            U64::from_u64(323213123).mod_inv_2k(64)
+        );
+    }
+
+    #[test]
+    fn test_mod_inv_2k_rand() {
+        let mut rng = thread_rng();
+        for _ in 0..1000 {
+            let a: u64 = rng.gen();
+            let k = 64;
+            let expect = mod_inverse_2k(a, k).map(U64::from_u64);
+            let actual = U64::from_u64(a).mod_inv_2k(k);
+            assert_eq!(expect, actual)
+        }
     }
 }
