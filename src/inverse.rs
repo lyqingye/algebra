@@ -58,9 +58,34 @@ pub fn mod_inv(a: u64, m: u64) -> Option<u64> {
     }
 }
 
+pub fn mod_inverse_2k(a: u64, k: u32) -> Option<u64> {
+    // 检查 a 是否为奇数，只有奇数才有模 2^k 的逆元
+    if a % 2 == 0 {
+        return None;
+    }
+
+    // 初始化 x 为 1，表示 a 在模 2^1 下的逆元
+    let mut x: u128 = 1;
+
+    // 循环计算从 2^1 到 2^k 的逆元
+    for i in 1..k {
+        // 计算 2 - a * x (注意使用 u128 以防止溢出)
+        let m = 1u128 << (i + 1);
+        let a_x = (a as u128 * x) & (m - 1);
+        let two_minus_a_x = 2u128.wrapping_sub(a_x) & (m - 1);
+
+        // 更新 x 为 x * (2 - a * x) % 2^(i+1)
+        x = (x * two_minus_a_x) & (m - 1);
+    }
+
+    // 返回结果，确保返回值在 u64 范围内
+    Some(x as u64)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+    use rand::{thread_rng, Rng};
 
     #[test]
     fn test_modular_inverse() {
@@ -84,5 +109,22 @@ mod test {
         assert_eq!(None, mod_inv(6, 12));
         assert_eq!(None, mod_inv(5, 15));
         assert_eq!(None, mod_inv(7, 21));
+    }
+
+    #[test]
+    fn test_mod_inv_2k() {
+        let mut rng = thread_rng();
+        for _ in 0..1000 {
+            let a: u64 = rng.gen();
+            let k: u32 = rng.gen_range(1..64);
+
+            if a >= 2u64.pow(k) {
+                continue;
+            }
+
+            let expect = mod_inv(a, 2u64.pow(k));
+            let actual = mod_inverse_2k(a, k);
+            assert_eq!(expect, actual)
+        }
     }
 }

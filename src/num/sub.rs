@@ -17,6 +17,12 @@ impl<const LIMBS: usize> Uint<LIMBS> {
 
         (Self { limbs }, borrow)
     }
+
+    #[inline(always)]
+    pub fn wrapping_sub(&self, rhs: &Self) -> Self {
+        let (r, _) = self.sbb(rhs, Limb::ZERO);
+        r
+    }
 }
 
 impl<const LIMBS: usize> Sub<&Uint<LIMBS>> for Uint<LIMBS> {
