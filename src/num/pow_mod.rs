@@ -1,10 +1,18 @@
 use crate::num::uint::Uint;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
+    #[inline(always)]
+    /// 2^k \mod n
     pub fn pow2k_mod(k: u32, n: &Self) -> Self {
+        Uint::from(2u64).mod_exp(k, n)
+    }
+
+    #[inline(always)]
+    /// self^{k} \mod n
+    pub fn mod_exp(&self, exp: u32, n: &Self) -> Self {
         let mut result = Uint::ONE;
-        let mut base = Uint::from(2u64);
-        let mut exp = k;
+        let mut base = *self;
+        let mut exp = exp;
 
         while exp > 0 {
             if exp % 2 == 1 {
