@@ -1,46 +1,31 @@
 use std::ops::Rem;
 
+use crate::num::limb::Limb;
 use crate::num::uint::Uint;
 use crate::num::wide::Wide;
 
 #[derive(Clone, Copy)]
-pub struct MontyForm<const LIMBS: usize> {
+pub struct MontyParams<const LIMBS: usize> {
     n: Uint<LIMBS>,
-    r: Uint<LIMBS>,
     r2: Uint<LIMBS>,
-    k: u32,
     neg_inv_n: Uint<LIMBS>,
 }
 
-impl<const LIMBS: usize> MontyForm<LIMBS> {
+impl<const LIMBS: usize> MontyParams<LIMBS> {
     pub fn init(n: &Uint<LIMBS>) -> Option<Self> {
         let n = *n;
-        let k = Uint::<LIMBS>::BITS as u32;
-        let r = Self::r(&n);
+        let r = Uint::MAX.rem(&n).adc(&Uint::ONE, Limb::ZERO).0;
         let r2 = r.split_mul(&r).rem(&n);
-        let inv_n = n.mod_inv(&r)?;
-        let neg_inv_n = r - &inv_n;
-        Some(Self {
-            n,
-            r,
-            r2,
-            k,
-            neg_inv_n,
-        })
-    }
-
-    fn r(n: &Uint<LIMBS>) -> Uint<LIMBS> {
-        Uint::pow2k_mod(Uint::<LIMBS>::BITS as u32, n)
+        let inv_n = n.mod_inv_2k(Uint::<LIMBS>::BITS as u32)?;
+        let neg_inv_n = Wide::from((Uint::ZERO, Uint::ONE))
+            .sub(&Wide::from((inv_n, Uint::ZERO)))
+            .low;
+        Some(Self { n, r2, neg_inv_n })
     }
 
     pub fn reduction(&self, t: &Uint<LIMBS>) -> Uint<LIMBS> {
-        let m = t.rem(self.r).split_mul(&self.neg_inv_n).rem(&self.r);
-        let ret = m
-            .split_mul(&self.n)
-            .add(&Wide::from((*t, Uint::ZERO)))
-            .div(&self.r)
-            .0
-            .low;
+        let m = t.split_mul(&self.neg_inv_n).low;
+        let ret = m.split_mul(&self.n).add(&Wide::from((*t, Uint::ZERO))).high;
         if ret >= self.n {
             ret - &self.n
         } else {
@@ -48,21 +33,38 @@ impl<const LIMBS: usize> MontyForm<LIMBS> {
         }
     }
 
-    pub fn mul_mod(&self, a: &Uint<LIMBS>, b: &Uint<LIMBS>) -> Uint<LIMBS> {
-        assert!(a < &self.n);
-        assert!(b < &self.n);
+    pub fn to_monty_form(&self, t: &Uint<LIMBS>) -> MontyForm<LIMBS> {
+        let form = self.reduction(&(t.split_mul(&self.r2).rem(&self.n)));
+        MontyForm {
+            form,
+            params: *self,
+        }
+    }
+}
 
-        let ar = self.reduction(&(a.split_mul(&self.r2).rem(&self.n)));
-        let br = self.reduction(&(b.split_mul(&self.r2).rem(&self.n)));
-        let abr2 = ar.split_mul(&br).rem(&self.n);
-        let abr = self.reduction(&abr2);
-        self.reduction(&abr)
+#[derive(Clone, Copy)]
+pub struct MontyForm<const LIMBS: usize> {
+    form: Uint<LIMBS>,
+    params: MontyParams<LIMBS>,
+}
+
+impl<const LIMBS: usize> MontyForm<LIMBS> {
+    pub fn mul_mod(&self, rhs: &Self) -> Self {
+        let form = self.form.split_mul(&rhs.form).rem(&self.params.n);
+        Self {
+            form,
+            params: self.params,
+        }
+    }
+
+    pub fn recover(&self) -> Uint<LIMBS> {
+        self.params.reduction(&self.params.reduction(&self.form))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::num::monty::MontyForm;
+    use crate::num::monty::MontyParams;
     use crate::num::uint::U64;
     use rand::{thread_rng, Rng};
 
@@ -71,8 +73,13 @@ mod test {
         let a = U64::from_u64(23456789);
         let b = U64::from_u64(12345678);
         let m = U64::from(123456789u64);
-        let mont = MontyForm::init(&m).unwrap();
-        let r = mont.mul_mod(&a, &b);
+        let params = MontyParams::init(&m).unwrap();
+        let ma = params.to_monty_form(&a);
+        let mb = params.to_monty_form(&b);
+        let ma_mod_mb = ma.mul_mod(&mb);
+        let r = ma_mod_mb.recover();
+
+        // let r = mont.mul_mod(&a, &b);
         assert_eq!(a.mul_mod(&b, &m), r);
     }
 
@@ -86,11 +93,13 @@ mod test {
             if m <= a || m <= b {
                 continue;
             }
-            let mont = MontyForm::init(&m);
-            if mont.is_none() {
+            let params = MontyParams::init(&m);
+            if params.is_none() {
                 continue;
             }
-            let r = mont.unwrap().mul_mod(&a, &b);
+            let ma = params.unwrap().to_monty_form(&a);
+            let mb = params.unwrap().to_monty_form(&b);
+            let r = ma.mul_mod(&mb).recover();
             assert_eq!(a.mul_mod(&b, &m), r);
         }
     }
