@@ -1,4 +1,5 @@
 use crate::num::uint::Uint;
+use std::ops::{Add, Shr};
 
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
@@ -59,7 +60,8 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     #[inline(always)]
-    pub fn mod_inv_2k(&self, k: u32) -> Option<Self> {
+    // FIXME
+    pub fn fixme_mod_inv_2k(&self, k: u32) -> Option<Self> {
         assert!(k >= Self::BITS as u32);
         if self.is_even() {
             return None;
@@ -70,12 +72,42 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         // 代表二进制 11, i 从1开始，所以 2^(i+1) - 1 = 3
         let mut mask = Self::from(3u64);
 
-        for _ in 1..k {
-            let a_x = self.split_mul(&x).bitand_low(&mask).low;
+        // 递推式:
+        // x_{k+1} = x_{k}(2-ax{k}) \pmod {2^{k+1}}
+        for i in 1..k {
+            let a_x = self.wrapping_mul(&x).bitand(&mask);
             let two_minus_a_x = two.wrapping_sub(&a_x).bitand(&mask);
-            x = x.split_mul(&two_minus_a_x).bitand_low(&mask).low;
+            x = x.wrapping_mul(&two_minus_a_x).bitand(&mask);
+
             mask = mask.wrapping_shl(1);
-            mask = mask.bitor(&Self::ONE);
+            mask = mask.add(&Self::ONE);
+            println!("i: {} x: {}", i, x);
+        }
+
+        Some(x)
+    }
+
+    #[inline(always)]
+    pub fn mod_inv_2k(&self, k: u32) -> Option<Self> {
+        assert!(k >= Self::BITS as u32);
+        if self.is_even() {
+            return None;
+        }
+
+        let mut x = Self::ZERO;
+        let mut b = Self::ONE;
+
+        for i in 0..k {
+            let x_i = b.limbs[0].0 & 1;
+
+            if x_i == 1 {
+                b = b.wrapping_sub(self).shr(&Self::ONE);
+            } else {
+                b = b.shr(&Self::ONE);
+            }
+
+            let set_bit_mask = Uint::from_u64(x_i).wrapping_shl(i);
+            x = x.bitor(&set_bit_mask);
         }
 
         Some(x)
@@ -105,8 +137,8 @@ mod test {
     #[test]
     fn test_mod_inv_2k() {
         assert_eq!(
-            Some(U64::from_u64(2092033757777554795)),
-            U64::from_u64(323213123).mod_inv_2k(64)
+            Some(U128::from_u128(8978285766154701517249939112421813611)),
+            U128::from_u128(323213123u128).mod_inv_2k(128)
         );
     }
 
