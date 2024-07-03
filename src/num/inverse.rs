@@ -1,5 +1,5 @@
 use crate::num::uint::Uint;
-use std::ops::{Add, Shr};
+use std::ops::Shr;
 
 impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
@@ -60,8 +60,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     }
 
     #[inline(always)]
-    // FIXME
-    pub fn fixme_mod_inv_2k(&self, k: u32) -> Option<Self> {
+    pub fn mod_inv_2k_dusse_kaliski(&self, k: u32) -> Option<Self> {
         assert!(k >= Self::BITS as u32);
         if self.is_even() {
             return None;
@@ -74,14 +73,13 @@ impl<const LIMBS: usize> Uint<LIMBS> {
 
         // 递推式:
         // x_{k+1} = x_{k}(2-ax{k}) \pmod {2^{k+1}}
-        for i in 1..k {
+        for _ in 1..k {
             let a_x = self.wrapping_mul(&x).bitand(&mask);
             let two_minus_a_x = two.wrapping_sub(&a_x).bitand(&mask);
             x = x.wrapping_mul(&two_minus_a_x).bitand(&mask);
 
             mask = mask.wrapping_shl(1);
-            mask = mask.add(&Self::ONE);
-            println!("i: {} x: {}", i, x);
+            mask = mask.bitor(&Self::ONE);
         }
 
         Some(x)
@@ -150,7 +148,9 @@ mod test {
             let k = 64;
             let expect = mod_inverse_2k(a, k).map(U64::from_u64);
             let actual = U64::from_u64(a).mod_inv_2k(k);
-            assert_eq!(expect, actual)
+            let actual2 = U64::from_u64(a).mod_inv_2k_dusse_kaliski(k);
+            assert_eq!(expect, actual);
+            assert_eq!(expect, actual2)
         }
     }
 }
