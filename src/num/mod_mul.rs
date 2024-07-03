@@ -9,7 +9,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
 
 #[cfg(test)]
 mod test {
-    use crate::num::uint::U64;
+    use crate::num::uint::{U128, U64};
     use rand::{thread_rng, Rng};
 
     #[test]
@@ -22,5 +22,15 @@ mod test {
         let expect = U64::from_u64((a as u128 * b as u128 % m as u128) as u64);
         let actual = U64::from_u64(a).mul_mod(&U64::from_u64(b), &U64::from_u64(m));
         assert_eq!(expect, actual)
+    }
+
+    #[test]
+    fn test_mul_mod_large() {
+        let m = U128::from(287215270712012985982119861826231487661u128);
+        let a = U128::from(230679353788795331459744549142118481455u128);
+        let b = U128::from(146263473042228956998536595460379662786u128);
+        let rs = a.mul_mod(&b, &m);
+        let expect = U128::from(202096250777435246437358086672401778403u128);
+        assert_eq!(expect, rs)
     }
 }

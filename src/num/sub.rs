@@ -60,6 +60,19 @@ mod test {
     }
 
     #[test]
+    fn test_wrapping_sub() {
+        let mut rng = thread_rng();
+        for _ in 0..1000 {
+            let a: u128 = rng.gen();
+            let b: u128 = rng.gen();
+
+            let ua = U128::from_u128(a);
+            let ub = U128::from_u128(b);
+            assert_eq!(U128::from_u128(a.wrapping_sub(b)), ua.wrapping_sub(&ub));
+        }
+    }
+
+    #[test]
     fn test_sub_with_overflow() {
         let (_, overflow) = U128::ONE.sbb(&U128::MAX, Limb::ZERO);
         assert!(overflow.is_nonzero())

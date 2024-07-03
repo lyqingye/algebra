@@ -13,9 +13,9 @@ impl<const LIMBS: usize> Uint<LIMBS> {
     #[inline(always)]
     pub(crate) fn split_mul(&self, rhs: &Self) -> Wide<LIMBS> {
         let mut temp = vec![Limb::ZERO; LIMBS * 2];
-        let mut carry = Limb::ZERO;
 
         for i in 0..LIMBS {
+            let mut carry = Limb::ZERO;
             for j in 0..LIMBS {
                 let (ret, c) = temp[i + j].mac(self.limbs[i], rhs.limbs[j], carry);
                 carry = c;
@@ -72,5 +72,20 @@ mod test {
 
             assert_eq!(U128::from_u128(c), c_1)
         }
+    }
+
+    #[test]
+    fn test_split_mul() {
+        let a = U128::from(230679353788795331459744549142118481455u128);
+        let b = U128::from(146263473042228956998536595460379662786u128);
+        let actual = a.split_mul(&b);
+        assert_eq!(
+            actual.low.to_string(),
+            "157876027405260771784662058730631689886"
+        );
+        assert_eq!(
+            actual.high.to_string(),
+            "99152841064272478578353237181199359824"
+        );
     }
 }

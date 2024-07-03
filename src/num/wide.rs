@@ -131,7 +131,7 @@ impl<const LIMBS: usize> Wide<LIMBS> {
         ret
     }
 
-    #[inline(always)]
+    // #[inline(always)]
     pub fn rem(&self, rhs: &Uint<LIMBS>) -> Uint<LIMBS> {
         let lz = rhs.leading_zeros();
         let mut rem = *self;
