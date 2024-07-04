@@ -1,6 +1,5 @@
 use std::ops::Rem;
 
-use crate::num::limb::Limb;
 use crate::num::uint::Uint;
 use crate::num::wide::Wide;
 
@@ -17,7 +16,7 @@ impl<const LIMBS: usize> MontyParams<LIMBS> {
         let n = *n;
 
         // 2^k mod p = 2^k - 1 + 1 mod p = 2^k - 1 mod p + 1 mod p = Uint::MAX mod p + 1
-        let r = Uint::MAX.rem(&n).adc(&Uint::ONE, Limb::ZERO).0;
+        let r = Uint::MAX.rem(&n).wrapping_add(&Uint::ONE);
         let r2 = r.split_mul(&r).rem(&n);
         let inv_n = n.mod_inv_2k(Uint::<LIMBS>::BITS as u32)?;
         let neg_inv_n = Wide::from((Uint::ZERO, Uint::ONE))
@@ -41,6 +40,7 @@ impl<const LIMBS: usize> MontyParams<LIMBS> {
         }
     }
 
+    /// 映射到蒙哥马利空间
     pub fn to_monty_form(self, t: &Uint<LIMBS>) -> MontyForm<LIMBS> {
         let form = self.reduction(&(t.split_mul(&self.r2).rem(&self.n)));
         MontyForm { form, params: self }
@@ -54,7 +54,7 @@ pub struct MontyForm<const LIMBS: usize> {
 }
 
 impl<const LIMBS: usize> MontyForm<LIMBS> {
-    pub fn mul_mod(&self, rhs: &Self) -> Self {
+    pub fn mul(&self, rhs: &Self) -> Self {
         let mul = self.form.split_mul(&rhs.form).rem(&self.params.n);
         Self {
             form: self.params.reduction(&mul),
@@ -62,7 +62,8 @@ impl<const LIMBS: usize> MontyForm<LIMBS> {
         }
     }
 
-    pub fn recover(&self) -> Uint<LIMBS> {
+    /// 从蒙哥马利空间转换为标准形式
+    pub fn normalize(&self) -> Uint<LIMBS> {
         self.params.reduction(&self.form)
     }
 }
@@ -82,8 +83,8 @@ mod test {
         let params = MontyParams::init(&m).unwrap();
         let ma = params.to_monty_form(&a);
         let mb = params.to_monty_form(&b);
-        let ma_mod_mb = ma.mul_mod(&mb);
-        let r = ma_mod_mb.recover();
+        let ma_mod_mb = ma.mul(&mb);
+        let r = ma_mod_mb.normalize();
 
         println!("expect: {} actual: {}", a.mul_mod(&b, &m), r);
         assert_eq!(a.mul_mod(&b, &m), r);
@@ -105,7 +106,7 @@ mod test {
             }
             let ma = params.unwrap().to_monty_form(&a);
             let mb = params.unwrap().to_monty_form(&b);
-            let r = ma.mul_mod(&mb).recover();
+            let r = ma.mul(&mb).normalize();
             assert_eq!(a.mul_mod(&b, &m), r, "a: {} b: {} m: {}", a, b, m);
         }
     }
