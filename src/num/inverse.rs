@@ -78,7 +78,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
             let two_minus_a_x = two.wrapping_sub(&a_x).bitand(&mask);
             x = x.wrapping_mul(&two_minus_a_x).bitand(&mask);
 
-            mask = mask.wrapping_shl(1);
+            mask = mask.wrapping_shl1();
             mask = mask.bitor(&Self::ONE);
         }
 
@@ -99,7 +99,7 @@ impl<const LIMBS: usize> Uint<LIMBS> {
             let x_i = b.limbs[0].0 & 1;
 
             if x_i == 1 {
-                b = b.wrapping_sub(self).shr(&Self::ONE);
+                b = b.wrapping_sub(self).wrapping_shr1();
             } else {
                 b = b.shr(&Self::ONE);
             }

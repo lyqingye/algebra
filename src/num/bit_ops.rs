@@ -124,6 +124,16 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         let r = self.wrapping_shr(rhs);
         (r, *self != r.wrapping_shl(rhs))
     }
+
+    #[inline(always)]
+    pub(crate) fn wrapping_shr1(&self) -> Self {
+        self.wrapping_shr(1)
+    }
+
+    #[inline(always)]
+    pub(crate) fn wrapping_shl1(&self) -> Self {
+        self.wrapping_shl(1)
+    }
 }
 impl<const LIMBS: usize> Shr<&Uint<LIMBS>> for Uint<LIMBS> {
     type Output = Self;

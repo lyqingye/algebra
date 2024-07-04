@@ -24,8 +24,8 @@ impl<const LIMBS: usize> Uint<LIMBS> {
                 break;
             }
             bd -= 1;
-            c = c >> &Self::ONE;
-            quo = quo << &Self::ONE;
+            c = c.wrapping_shr1();
+            quo = quo.wrapping_shl1();
         }
 
         #[cfg(test)]

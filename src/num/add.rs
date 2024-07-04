@@ -17,6 +17,18 @@ impl<const LIMBS: usize> Uint<LIMBS> {
 
         (Self { limbs }, carry)
     }
+
+    #[inline(always)]
+    pub fn wrapping_add(&self, rhs: &Self) -> Self {
+        let (r, _carry) = self.adc(rhs, Limb::ZERO);
+        r
+    }
+
+    #[inline(always)]
+    pub fn overflowing_add(&self, rhs: &Self) -> (Self, bool) {
+        let (r, carry) = self.adc(rhs, Limb::ZERO);
+        (r, carry.is_nonzero())
+    }
 }
 
 impl<const LIMBS: usize> Add<&Uint<LIMBS>> for Uint<LIMBS> {

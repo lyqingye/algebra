@@ -23,6 +23,12 @@ impl<const LIMBS: usize> Uint<LIMBS> {
         let (r, _) = self.sbb(rhs, Limb::ZERO);
         r
     }
+
+    #[inline(always)]
+    pub fn overflowing_sub(&self, rhs: &Self) -> (Self, bool) {
+        let (r, borrow) = self.sbb(rhs, Limb::ZERO);
+        (r, borrow.is_nonzero())
+    }
 }
 
 impl<const LIMBS: usize> Sub<&Uint<LIMBS>> for Uint<LIMBS> {
