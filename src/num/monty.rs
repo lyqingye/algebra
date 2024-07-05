@@ -3,7 +3,7 @@ use std::ops::Rem;
 use crate::num::uint::Uint;
 use crate::num::wide::Wide;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct MontyParams<const LIMBS: usize> {
     n: Uint<LIMBS>,
     r: Uint<LIMBS>,
@@ -45,9 +45,16 @@ impl<const LIMBS: usize> MontyParams<LIMBS> {
         let form = self.reduction(&(t.split_mul(&self.r2).rem(&self.n)));
         MontyForm { form, params: self }
     }
+
+    pub fn simply_to_monty_form(self, t: &Uint<LIMBS>) -> MontyForm<LIMBS> {
+        MontyForm {
+            form: t.split_mul(&self.r).rem(&self.n),
+            params: self,
+        }
+    }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct MontyForm<const LIMBS: usize> {
     form: Uint<LIMBS>,
     params: MontyParams<LIMBS>,
@@ -108,6 +115,9 @@ mod test {
             let mb = params.unwrap().to_monty_form(&b);
             let r = ma.mul(&mb).normalize();
             assert_eq!(a.mul_mod(&b, &m), r, "a: {} b: {} m: {}", a, b, m);
+
+            assert_eq!(ma, params.unwrap().simply_to_monty_form(&a),);
+            assert_eq!(mb, params.unwrap().simply_to_monty_form(&b),);
         }
     }
 }

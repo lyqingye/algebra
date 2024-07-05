@@ -183,6 +183,24 @@ impl<const LIMBS: usize> Wide<LIMBS> {
         }
         (quo, rem.low)
     }
+
+    #[inline(always)]
+    pub fn to_limbs(self) -> Vec<Limb> {
+        let mut ret = Vec::new();
+        ret.extend_from_slice(&self.low.limbs);
+        ret.extend_from_slice(&self.high.limbs);
+        ret
+    }
+
+    #[inline(always)]
+    pub fn from_limbs(limbs: &[Limb]) -> Self {
+        assert_eq!(limbs.len(), LIMBS * 2);
+        let mut low = Uint::ZERO;
+        let mut high = Uint::ZERO;
+        low.limbs.copy_from_slice(&limbs[0..LIMBS]);
+        high.limbs.copy_from_slice(&limbs[LIMBS..LIMBS * 2]);
+        Self { low, high }
+    }
 }
 
 impl<const LIMBS: usize> From<(Uint<LIMBS>, Uint<LIMBS>)> for Wide<LIMBS> {
@@ -327,6 +345,18 @@ mod test {
             let actual: Wide<1> = Wide::from((U64::from_u64(a), U64::ZERO)).shl(shift);
 
             assert_eq!(expect, actual)
+        }
+    }
+
+    #[test]
+    fn test_to_limbs() {
+        let mut rng = thread_rng();
+        for _ in 0..1000 {
+            let a = U128::rand(&mut rng);
+            let expect = a.split_mul(&a);
+            let limbs = expect.to_limbs();
+            let actual = Wide::from_limbs(limbs.as_slice());
+            assert_eq!(expect, actual);
         }
     }
 }
