@@ -1,9 +1,10 @@
+use std::cmp::Ordering;
 use std::ops::BitOr;
 
 use crate::num::limb::Limb;
 use crate::num::uint::Uint;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, Debug)]
 pub struct Wide<const LIMBS: usize> {
     pub(crate) low: Uint<LIMBS>,
     pub(crate) high: Uint<LIMBS>,
@@ -13,6 +14,11 @@ impl<const LIMBS: usize> Wide<LIMBS> {
     pub const ZERO: Self = Self {
         low: Uint::ZERO,
         high: Uint::ZERO,
+    };
+
+    pub const MAX: Self = Self {
+        low: Uint::MAX,
+        high: Uint::MAX,
     };
 
     pub const ONE: Self = Self {
@@ -131,7 +137,7 @@ impl<const LIMBS: usize> Wide<LIMBS> {
         ret
     }
 
-    // #[inline(always)]
+    #[inline(always)]
     pub fn rem(&self, rhs: &Uint<LIMBS>) -> Uint<LIMBS> {
         let lz = rhs.leading_zeros();
         let mut rem = *self;
@@ -201,6 +207,25 @@ impl<const LIMBS: usize> Wide<LIMBS> {
         high.limbs.copy_from_slice(&limbs[LIMBS..LIMBS * 2]);
         Self { low, high }
     }
+
+    pub(crate) fn mul(&self, rhs: &Self) -> Vec<Limb> {
+        let length = LIMBS * 2;
+        let mut temp = vec![Limb::ZERO; LIMBS * 4];
+        let lhs = self.to_limbs();
+        let rhs = rhs.to_limbs();
+
+        for i in 0..length {
+            let mut carry = Limb::ZERO;
+            for j in 0..length {
+                let (ret, c) = temp[i + j].mac(lhs[i], rhs[j], carry);
+                carry = c;
+                temp[i + j] = ret;
+            }
+            temp[i + length] = carry;
+        }
+
+        temp
+    }
 }
 
 impl<const LIMBS: usize> From<(Uint<LIMBS>, Uint<LIMBS>)> for Wide<LIMBS> {
@@ -209,6 +234,28 @@ impl<const LIMBS: usize> From<(Uint<LIMBS>, Uint<LIMBS>)> for Wide<LIMBS> {
             low: v.0,
             high: v.1,
         }
+    }
+}
+
+impl<const LIMBS: usize> PartialEq for Wide<LIMBS> {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other).is_eq()
+    }
+}
+
+impl<const LIMBS: usize> Ord for Wide<LIMBS> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.high.cmp(&other.high) {
+            Ordering::Less => Ordering::Less,
+            Ordering::Equal => self.low.cmp(&other.low),
+            Ordering::Greater => Ordering::Greater,
+        }
+    }
+}
+
+impl<const LIMBS: usize> PartialOrd for Wide<LIMBS> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
